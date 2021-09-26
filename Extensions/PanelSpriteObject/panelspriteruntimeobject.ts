@@ -39,6 +39,10 @@ namespace gdjs {
     // size of the texture being used (contrary to most objects).
     _width: float;
     _height: float;
+    _scaleX: float;
+    _scaleY: float;
+    _scaleFromWidth: float;
+    _scaleFromHeight: float;
 
     _renderer: gdjs.PanelSpriteRuntimeObjectRenderer;
 
@@ -56,8 +60,9 @@ namespace gdjs {
       this._tBorder = panelSpriteObjectData.topMargin;
       this._bBorder = panelSpriteObjectData.bottomMargin;
       this._tiled = panelSpriteObjectData.tiled;
-      this._width = panelSpriteObjectData.width;
-      this._height = panelSpriteObjectData.height;
+      this._width = this._scaleFromWidth = panelSpriteObjectData.width;
+      this._height = this._scaleFromHeight = panelSpriteObjectData.height;
+      this._scaleX = this._scaleY = 1;
       this._renderer = new gdjs.PanelSpriteRuntimeObjectRenderer(
         this,
         runtimeScene,
@@ -194,7 +199,7 @@ namespace gdjs {
     setWidth(width: float): void {
       if (this._width === width) return;
 
-      this._width = width;
+      this._width = this._scaleFromWidth = width;
       this._renderer.updateWidth();
       this.hitBoxesDirty = true;
     }
@@ -206,7 +211,7 @@ namespace gdjs {
     setHeight(height: float): void {
       if (this._height === height) return;
 
-      this._height = height;
+      this._height = this._scaleFromHeight = height;
       this._renderer.updateHeight();
       this.hitBoxesDirty = true;
     }
@@ -265,14 +270,14 @@ namespace gdjs {
      * Get x-scale of the tiled sprite object.
      */
     getScaleX(): float {
-      return this._width / this._renderer.getTextureWidth();
+      return this._scaleX;
     }
 
     /**
      * Get y-scale of the tiled sprite object.
      */
     getScaleY(): float {
-      return this._height / this._renderer.getTextureHeight();
+      return this._scaleY;
     }
 
     /**
@@ -280,8 +285,8 @@ namespace gdjs {
      * @param newScale The new scale for the tiled sprite object.
      */
     setScale(newScale: float): void {
-      this.setWidth(this._renderer.getTextureWidth() * newScale);
-      this.setHeight(this._renderer.getTextureHeight() * newScale);
+      this.setScaleX(newScale);
+      this.setScaleY(newScale);
     }
 
     /**
@@ -289,7 +294,10 @@ namespace gdjs {
      * @param newScale The new x-scale for the tiled sprite object.
      */
     setScaleX(newScale: float): void {
-      this.setWidth(this._renderer.getTextureWidth() * newScale);
+      const prev = this._scaleFromWidth;
+      this.setWidth(this._scaleFromWidth * newScale);
+      this._scaleFromWidth = prev;
+      this._scaleX = newScale;
     }
 
     /**
@@ -297,7 +305,10 @@ namespace gdjs {
      * @param newScale The new y-scale for the tiled sprite object.
      */
     setScaleY(newScale: float): void {
-      this.setHeight(this._renderer.getTextureHeight() * newScale);
+      const prev = this._scaleFromHeight;
+      this.setHeight(this._scaleFromHeight * newScale);
+      this._scaleFromHeight = prev;
+      this._scaleY = newScale;
     }
   }
   gdjs.registerObject(
